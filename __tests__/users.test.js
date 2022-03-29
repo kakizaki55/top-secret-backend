@@ -49,15 +49,15 @@ describe('top-secret-backend routes', () => {
       'cannot POST /api/v1/users/session (401)'
     );
   });
-  it.only('logout the currently logged in user', async () => {
+  it('logout the currently logged in user', async () => {
+    const agent = request.agent(app);
     await UserService.create(mockUser);
     const { email, password } = mockUser;
 
-    await request(app).post('/api/v1/users/session').send({ email, password });
+    await agent.post('/api/v1/users/session').send({ email, password });
 
-    const signOutResponse = await request(app)
-      .delete('/api/v1/users/session')
-      .send(email, password);
+    const signOutResponse = await agent.delete('/api/v1/users/session');
+
     expect(signOutResponse.body).toEqual({
       success: true,
       message: 'Signed out successfully!',
