@@ -39,7 +39,7 @@ describe('top-secret-backend routes', () => {
       .send({ email, password });
     expect(response.body).toEqual({ message: 'Signed in successfully!' });
   });
-  it('send the correct', async () => {
+  it('send the correct error message', async () => {
     const { email, password } = mockUser;
 
     const response = await request(app)
@@ -48,5 +48,19 @@ describe('top-secret-backend routes', () => {
     expect(response.error.message).toEqual(
       'cannot POST /api/v1/users/session (401)'
     );
+  });
+  it.only('logout the currently logged in user', async () => {
+    await UserService.create(mockUser);
+    const { email, password } = mockUser;
+
+    await request(app).post('/api/v1/users/session').send({ email, password });
+
+    const signOutResponse = await request(app)
+      .delete('/api/v1/users/session')
+      .send(email, password);
+    expect(signOutResponse.body).toEqual({
+      success: true,
+      message: 'Signed out successfully!',
+    });
   });
 });
