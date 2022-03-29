@@ -2,6 +2,7 @@ const pool = require('../lib/utils/pool');
 const setup = require('../data/setup');
 const request = require('supertest');
 const app = require('../lib/app');
+const UserService = require('../lib/services/UserService');
 
 const mockUser = {
   firstName: 'test',
@@ -28,5 +29,24 @@ describe('top-secret-backend routes', () => {
       lastName,
       email,
     });
+  });
+  it('signs in a an existing user', async () => {
+    await UserService.create(mockUser);
+    const { email, password } = mockUser;
+
+    const response = await request(app)
+      .post('/api/v1/users/session')
+      .send({ email, password });
+    expect(response.body).toEqual({ message: 'Signed in successfully!' });
+  });
+  it('send the correct', async () => {
+    const { email, password } = mockUser;
+
+    const response = await request(app)
+      .post('/api/v1/users/session')
+      .send({ email, password });
+    expect(response.error.message).toEqual(
+      'cannot POST /api/v1/users/session (401)'
+    );
   });
 });
