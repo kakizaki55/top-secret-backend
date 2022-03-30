@@ -3,6 +3,12 @@ const setup = require('../data/setup');
 const request = require('supertest');
 const app = require('../lib/app');
 const UserService = require('../lib/services/UserService');
+const mockUser = {
+  firstName: 'test',
+  lastName: 'test-last-name',
+  email: 'test@gmail.com',
+  password: '12345678',
+};
 
 describe('top-secret-backend routes', () => {
   beforeEach(() => {
@@ -28,38 +34,22 @@ describe('top-secret-backend routes', () => {
       created_at: expect.any(String),
     });
   });
-  it('protect route using middle wear to authenticate before being able to insert', async () => {
+  it.only('should create a secret if loggned in', async () => {
     const agent = request.agent(app);
-
-    const mockUser = {
-      firstName: 'test',
-      lastName: 'test-last-name',
-      email: 'test@gmail.com',
-      password: '12345678',
-    };
-
-    await UserService.create(mockUser);
+    await UserService.create({ ...mockUser });
     const { email, password } = mockUser;
+    await agent.post('/api/v1/users/session').send({ email, password });
 
-    const logoutResponse = await agent.get('/api/v1/secrets');
-    expect(logoutResponse.status).toEqual(401);
+    const expected = {
+      title: 'secret',
+      description: 'is so cute secret',
+    };
+    const res = await agent.post('/api/v1/secrets').send(expected);
 
-    const response = await request(app)
-      .post('/api/v1/users/session')
-      .send({ email, password });
-    expect(response.body).toEqual({ message: 'Signed in successfully!' });
-
-    const secretResponse = await request(app)
-      .post('/api/v1/secrets')
-      .send(mockSecret);
-
-    expect(secretResponse.body).toEqual({
-      ...mockSecret,
+    expect(res.body).toEqual({
       id: expect.any(String),
-      created_at: expect.any(String),
+      ...expected,
+      createdAt: expect.any(String),
     });
-
-    const loginResponse = await agent.get('/api/v1/secrets');
-    expect(loginResponse.status).toEqual(200);
   });
 });
