@@ -23,6 +23,6 @@ INSERT INTO
     secrets (title, description)
 VALUES
     (
-        ' super big secret ',
-        ' this is one big secret '
+        'super big secret',
+        'this is one big secret'
     );
